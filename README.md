@@ -62,6 +62,54 @@ evo_traj tum madodom_estimate.txt --ref optimized_traj.txt -p --plot_mode xyz
 
 TUM format: `timestamp tx ty tz qx qy qz qw`
 
+### Step 3 — Compute accuracy metrics with evo
+
+Two standard metrics used in odometry leaderboards:
+
+**ATE (Absolute Trajectory Error)** — global accuracy; measures average drift
+from ground truth after best-fit alignment. Lower is better.
+
+**RPE (Relative Pose Error)** — local drift rate per metre travelled. Independent
+of loop closure. Lower is better.
+
+```bash
+source ~/evo_env/bin/activate
+
+# ── ATE (Absolute Trajectory Error) ──────────────────────────────────────────
+# -r trans_part  : translational component only (metres)
+# -a             : SE(3) Umeyama alignment (standard for odometry evaluation)
+
+cd ~/dataset1
+evo_ape tum optimized_traj.txt madodom_estimate.txt -r trans_part -a
+
+cd ~/dataset2
+evo_ape tum optimized_traj.txt madodom_estimate.txt -r trans_part -a
+
+cd ~/dataset3
+evo_ape tum optimized_traj.txt madodom_estimate.txt -r trans_part -a
+
+# Add -p to open a plot window for any of the above.
+
+# ── RPE (Relative Pose Error, per metre) ─────────────────────────────────────
+# --delta 1 --delta_unit m : measure drift over every 1-metre segment
+
+cd ~/dataset2
+evo_rpe tum optimized_traj.txt madodom_estimate.txt -r trans_part -a --delta 1 --delta_unit m
+
+cd ~/dataset3
+evo_rpe tum optimized_traj.txt madodom_estimate.txt -r trans_part -a --delta 1 --delta_unit m
+```
+
+**Our results (May 2026):**
+
+| Dataset | ATE RMSE | RPE RMSE (m/m) | Drift % |
+|---------|----------|----------------|---------|
+| Dataset 1 (still sensor) | 0.012 m | — | — |
+| Dataset 2 (wheeled loop) | 0.305 m | 0.028 | 2.8% |
+| Dataset 3 (stairs) | 0.217 m | 0.048 | 4.8% |
+
+Dataset 2 loop closure error: 1.78 m over ~100 m (reference MAD-ICP: 1.63 m).
+
 ---
 
 ## Live Visualization (RViz)
