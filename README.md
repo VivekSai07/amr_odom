@@ -104,7 +104,7 @@ evo_rpe tum optimized_traj.txt madodom_estimate.txt -r trans_part -a --delta 1 -
 
 | Dataset | ATE RMSE | RPE RMSE (m/m) | Drift % |
 |---------|----------|----------------|---------|
-| Dataset 1 (still sensor) | 0.012 m | — | — |
+| Dataset 1 (still sensor) | 0.012 m | 0.018 | 1.8% |
 | Dataset 2 (wheeled loop) | 0.305 m | 0.028 | 2.8% |
 | Dataset 3 (stairs) | 0.217 m | 0.048 | 4.8% |
 
