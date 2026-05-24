@@ -1,0 +1,34 @@
+madodom:
+  ros__parameters:
+    # ── Topic / TF ────────────────────────────────────────────────────────
+    lidar_topic:   "/ouster/points"
+    odom_frame:    "odom"
+    base_frame:    "base_link"
+    publish_tf:    true
+    publish_odom:  true
+    publish_path:  true
+    max_path_poses: 10000
+
+    # ── Sensor range + intensity filter ──────────────────────────────────
+    min_range:      1.0      # [m] supervisor: min 1 m
+    max_range:     45.0      # [m] supervisor: max 40-50 m
+    intensity_min:  1100.0   # supervisor: kick out < 1100
+
+    # ── MAD-tree / map ────────────────────────────────────────────────────
+    b_max:          0.6      # max leaf extent [m]; also base search radius
+    b_min:          0.1      # thin-plane threshold for normal inheritance [m]
+    b_ratio:        0.02     # search radius grows b_ratio * range(point)
+    num_keyframes:  8        # sliding-window size
+    p_th:           0.8      # inlier ratio below which a new keyframe is added
+
+    # ── ICP ───────────────────────────────────────────────────────────────
+    icp_max_iterations:      15
+    icp_delta_chi_eps:        1.0e-6
+    icp_rho_ker:              0.1     # Huber threshold² (sqrt taken internally)
+    icp_min_correspondences:  50      # at least 50 leaf-level correspondences
+    icp_min_inlier_ratio:     0.4     # < 40% inlier → local minimum, freeze pose
+    icp_max_chi_health:       1.0     # loose sanity gate: chi > 1 m is clearly wrong
+    icp_max_chi_keyframe:     0.15    # add keyframe only when residual is clean [m]
+
+    sensor_hz:               10.0    # LiDAR frequency [Hz]
+    frame_window:            10      # frames buffered for best-H keyframe selection

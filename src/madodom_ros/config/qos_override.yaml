@@ -1,0 +1,4 @@
+/ouster/points:
+  reliability: reliable
+  history: keep_last
+  depth: 10

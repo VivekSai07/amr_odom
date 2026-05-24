@@ -1,0 +1,28 @@
+<?xml version="1.0"?>
+<package format="3">
+  <name>madodom_ros</name>
+  <version>0.1.0</version>
+  <description>ROS 2 wrapper for MAD-ICP-style LiDAR odometry</description>
+  <maintainer email="user@example.com">user</maintainer>
+  <license>MIT</license>
+
+  <buildtool_depend>ament_cmake</buildtool_depend>
+
+  <depend>rclcpp</depend>
+  <depend>sensor_msgs</depend>
+  <depend>nav_msgs</depend>
+  <depend>geometry_msgs</depend>
+  <depend>tf2_ros</depend>
+  <depend>tf2_eigen</depend>
+  <depend>eigen</depend>
+  <depend>madodom_core</depend>
+
+  <exec_depend>python3-launch</exec_depend>
+  <exec_depend>launch</exec_depend>
+  <exec_depend>launch_ros</exec_depend>
+  <exec_depend>rviz2</exec_depend>
+
+  <export>
+    <build_type>ament_cmake</build_type>
+  </export>
+</package>
