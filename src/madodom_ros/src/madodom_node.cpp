@@ -88,7 +88,8 @@ public:
         if (publish_odom_)
             odom_pub_ = create_publisher<nav_msgs::msg::Odometry>("odometry", 10);
         if (publish_path_)
-            path_pub_ = create_publisher<nav_msgs::msg::Path>("path", 10);
+            path_pub_ = create_publisher<nav_msgs::msg::Path>("path",
+                rclcpp::QoS(1));
 
         // ── Subscriber + async worker thread ─────────────────────────────
         scan_sub_ = create_subscription<sensor_msgs::msg::PointCloud2>(
@@ -237,7 +238,11 @@ private:
             path_.poses.push_back(ps);
             if (path_.poses.size() > max_path_poses_)
                 path_.poses.erase(path_.poses.begin());
-            path_pub_->publish(path_);
+            // Publish at ~2 Hz instead of every scan: with depth-1 QoS the
+            // publisher drops any unread message the moment a newer one arrives,
+            // but throttling further reduces DDS load for large path messages.
+            if (++path_pub_counter_ % 5 == 0)
+                path_pub_->publish(path_);
         }
     }
 
@@ -249,6 +254,7 @@ private:
     rclcpp::Subscription<sensor_msgs::msg::PointCloud2>::SharedPtr scan_sub_;
 
     nav_msgs::msg::Path path_;
+    std::size_t         path_pub_counter_ = 0;
 
     std::string lidar_topic_, odom_frame_, base_frame_;
     bool        publish_tf_, publish_odom_, publish_path_;

@@ -1,0 +1,35 @@
+services:
+  madodom:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    image: madodom:humble
+    container_name: madodom_demo
+
+    # Host networking is required for ROS2 DDS discovery across terminals
+    network_mode: host
+
+    environment:
+      - DISPLAY=${DISPLAY}
+      - RMW_IMPLEMENTATION=rmw_cyclonedds_cpp
+      # Prevents Qt/RViz shared-memory issues inside containers
+      - QT_X11_NO_MITSHM=1
+
+    volumes:
+      # X11 socket for RViz display
+      - /tmp/.X11-unix:/tmp/.X11-unix:rw
+      # Datasets — place these on the lab system at ~/dataset{1,2,3}
+      # or edit the left-hand side to match the actual host paths
+      - ~/dataset1:/datasets/dataset1:ro
+      - ~/dataset2:/datasets/dataset2:ro
+      - ~/dataset3:/datasets/dataset3:ro
+
+    # GPU / display adapter access (works for Intel, AMD, NVIDIA with Mesa)
+    devices:
+      - /dev/dri:/dev/dri
+
+    # Shared IPC namespace avoids DDS SHM issues
+    ipc: host
+
+    stdin_open: true
+    tty: true

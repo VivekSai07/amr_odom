@@ -105,6 +105,95 @@ To speed up playback add `-r 2.0` (2× speed) to the bag play command.
 
 ---
 
+## Docker (Ubuntu 24.04 lab system)
+
+ROS2 Humble targets Ubuntu 22.04. On a lab machine running Ubuntu 24.04, run
+everything inside a Docker container.
+
+### One-time setup on the lab system
+
+```bash
+# 1. Install Docker (if not already installed)
+sudo apt install docker.io docker-compose-plugin
+sudo usermod -aG docker $USER   # log out and back in after this
+
+# 2. Allow the container to open windows on your display
+xhost +local:docker
+
+# 3. Copy your datasets onto the lab system (adjust paths as needed)
+#    Expect ~/dataset1, ~/dataset2, ~/dataset3 on the host
+
+# 4. Clone the repo
+git clone git@github.com:VivekSai07/amr_odom.git madodom_ws
+cd madodom_ws
+
+# 5. Build the image (takes 5-10 min on first run)
+docker compose build
+```
+
+### Running (three terminals, same container)
+
+**Terminal 1 — start the container and launch the node + RViz:**
+```bash
+docker compose run --rm madodom \
+  bash -c "ros2 launch madodom_ros madodom.launch.py rviz:=true"
+```
+
+**Terminal 2 — exec into the running container, publish ground truth:**
+```bash
+docker exec -it madodom_demo bash
+# inside container:
+python3 /ws/src/madodom_ros/scripts/publish_gt.py /datasets/dataset2/optimized_traj.txt
+```
+
+**Terminal 3 — exec into the running container, play the bag:**
+```bash
+docker exec -it madodom_demo bash
+# inside container:
+ros2 bag play /datasets/dataset2/bag/ --clock \
+  --qos-profile-overrides-path /ws/src/madodom_ros/config/qos_override.yaml
+```
+
+### Offline evaluation inside the container
+
+```bash
+docker compose run --rm madodom bash
+
+# Inside container:
+ros2 run madodom_ros madodom_offline \
+  /datasets/dataset2/bag/ /datasets/dataset2/madodom_estimate.txt 1100
+```
+
+The estimate file is written to the host-mounted dataset path and is
+immediately available for evo plotting in the same container session:
+
+```bash
+# Dataset 1 — static sensor (xy view)
+evo_traj tum /datasets/dataset1/madodom_estimate.txt \
+  --ref /datasets/dataset1/optimized_traj.txt -p --plot_mode xy
+
+# Dataset 2 — wheeled robot loop (xy view)
+evo_traj tum /datasets/dataset2/madodom_estimate.txt \
+  --ref /datasets/dataset2/optimized_traj.txt -p --plot_mode xy
+
+# Dataset 3 — stairs (xyz view, shows Z climb)
+evo_traj tum /datasets/dataset3/madodom_estimate.txt \
+  --ref /datasets/dataset3/optimized_traj.txt -p --plot_mode xyz
+```
+
+The plot opens as an X11 window on the lab system display.
+If the ground truth file has extra whitespace, fix it first (one-time):
+```bash
+cd /datasets/dataset2
+awk '{$1=$1; print}' optimized_traj.txt > tmp.txt && mv tmp.txt optimized_traj.txt
+```
+
+> **Note for NVIDIA GPUs**: install `nvidia-container-toolkit` on the host and
+> add `runtime: nvidia` under the `madodom` service in `docker-compose.yml`.
+> For Intel/AMD the default DRI device passthrough is sufficient for RViz.
+
+---
+
 ## Datasets
 
 | Dataset | Description | Scans | Duration |
