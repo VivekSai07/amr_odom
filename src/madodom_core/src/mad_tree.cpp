@@ -4,6 +4,7 @@
 #include <algorithm>
 #include <cassert>
 #include <cstring>
+#include <limits>
 
 namespace madodom {
 
@@ -117,7 +118,14 @@ void MADTree::build(std::vector<Vec3>& pts, int begin, int end,
 
 // ── query ────────────────────────────────────────────────────────────────────
 
-const MADTree* MADTree::bestMatchingLeafFast(const Vec3& query) const {
+const MADTree* MADTree::bestMatchingLeafFast(const Vec3& query,
+                                              double /*search_radius2*/) const {
+    // Greedy-descent nearest-leaf query (original O(log N) implementation).
+    // Backtracking (checked and reverted): changes which target leaf is matched
+    // for near-split-plane source leaves, altering ICP Jacobians and keyframe
+    // insertion timing in ways that increase ATE on these datasets despite
+    // keeping RPE unchanged.  The greedy descent is retained as the proven-best
+    // correspondence strategy for this sensor/environment combination.
     const MADTree* node = this;
     while (node->left_ || node->right_) {
         const Vec3& split_dir = node->eigenvectors_.col(2);

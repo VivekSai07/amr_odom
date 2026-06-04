@@ -48,7 +48,8 @@ struct MADTree {
                const Vec3* inherited_normal = nullptr);
 
     // Greedy-descent nearest-leaf query.
-    const MADTree* bestMatchingLeafFast(const Vec3& query) const;
+    const MADTree* bestMatchingLeafFast(const Vec3& query,
+                                        double search_radius2 = 1e18) const;
 
     // Append all leaf pointers (no children) to `out`.
     void getLeaves(std::vector<const MADTree*>& out) const;
