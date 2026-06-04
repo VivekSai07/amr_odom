@@ -2,6 +2,7 @@
 
 #include <cmath>
 #include <cstdio>
+#include <memory>
 
 #include "madodom_core/voxel_grid.hpp"
 
@@ -74,11 +75,11 @@ OdometryResult Odometry::registerScan(const PointCloud& scan_sensor) {
 
     // ── Build source MAD-tree from current scan (sensor frame) ──────────────
     std::vector<Vec3> src_pts(source.begin(), source.end());
-    MADTree* source_root = buildMADTree(src_pts, cfg_.b_max, cfg_.b_min);
+    // unique_ptr owns the tree: both early-return and normal paths are leak-safe.
+    std::unique_ptr<MADTree> source_root(buildMADTree(src_pts, cfg_.b_max, cfg_.b_min));
     if (!source_root || map_.empty()) {
         ++n_scans_;
         result.pose = T_curr_;
-        if (source_root) delete source_root;
         return result;
     }
 
@@ -127,10 +128,10 @@ OdometryResult Odometry::registerScan(const PointCloud& scan_sensor) {
 
     // ── Frame buffer update ──────────────────────────────────────────────────
     if (healthy) {
-        // Pre-transform filtered scan to world frame and store.
+        // Pre-transform filtered scan to world frame.
         const Mat3 R = T_curr_.linear();
         const Vec3 t = T_curr_.translation();
-        std::vector<Vec3> world_pts;
+        PointCloud world_pts;
         world_pts.reserve(filtered.size());
         for (const Vec3& p : filtered) world_pts.push_back(R * p + t);
 
@@ -164,8 +165,6 @@ OdometryResult Odometry::registerScan(const PointCloud& scan_sensor) {
         frame_buffer_.erase(frame_buffer_.begin() + static_cast<int>(best_idx));
         result.new_keyframe = true;
     }
-
-    delete source_root;
 
     result.pose                = T_curr_;
     result.icp_healthy         = healthy;
