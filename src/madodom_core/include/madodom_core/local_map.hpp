@@ -11,6 +11,7 @@
 // by the existing map).
 
 #include <deque>
+#include <memory>
 #include <vector>
 
 #include "madodom_core/mad_tree.hpp"
@@ -50,7 +51,7 @@ public:
 
 private:
     LocalMapConfig cfg_;
-    std::deque<MADTree*> trees_;
+    std::deque<std::unique_ptr<MADTree>> trees_;
 };
 
 }  // namespace madodom

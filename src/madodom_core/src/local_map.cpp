@@ -4,7 +4,8 @@ namespace madodom {
 
 LocalMap::LocalMap(const LocalMapConfig& cfg) : cfg_(cfg) {}
 
-LocalMap::~LocalMap() { clear(); }
+// unique_ptr destructor recursively frees the entire tree; no manual delete.
+LocalMap::~LocalMap() = default;
 
 void LocalMap::addKeyframe(std::vector<Vec3> pts) {
     if (pts.empty()) return;
@@ -12,22 +13,22 @@ void LocalMap::addKeyframe(std::vector<Vec3> pts) {
     MADTree* root = buildMADTree(pts, cfg_.b_max, cfg_.b_min);
     if (!root) return;
 
-    trees_.push_back(root);
+    trees_.emplace_back(root);  // unique_ptr takes ownership of raw pointer
 
-    // Prune oldest when over capacity.
-    while (static_cast<int>(trees_.size()) > cfg_.num_keyframes) {
-        delete trees_.front();
+    // Prune oldest when over capacity — unique_ptr destructor handles deletion.
+    while (static_cast<int>(trees_.size()) > cfg_.num_keyframes)
         trees_.pop_front();
-    }
 }
 
 std::vector<MADTree*> LocalMap::trees() {
-    return std::vector<MADTree*>(trees_.begin(), trees_.end());
+    std::vector<MADTree*> out;
+    out.reserve(trees_.size());
+    for (const auto& t : trees_) out.push_back(t.get());
+    return out;
 }
 
 void LocalMap::clear() {
-    for (MADTree* t : trees_) delete t;
-    trees_.clear();
+    trees_.clear();  // unique_ptr destructors free all trees automatically
 }
 
 }  // namespace madodom
