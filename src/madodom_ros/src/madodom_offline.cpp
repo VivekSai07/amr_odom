@@ -91,6 +91,7 @@ int main(int argc, char** argv) {
     cfg.min_correspondences = 50;
     cfg.sensor_hz           = 10.0;
     cfg.frame_window        = 10;
+    cfg.source_voxel_size   = 0.15;
 
     madodom::Odometry odometry(cfg);
 

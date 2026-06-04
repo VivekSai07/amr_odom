@@ -45,6 +45,7 @@ public:
         declare_parameter("icp_max_chi_keyframe",     1.0);
         declare_parameter("sensor_hz",               10.0);
         declare_parameter("frame_window",            10);
+        declare_parameter("source_voxel_size",        0.3);
 
         lidar_topic_   = get_parameter("lidar_topic").as_string();
         odom_frame_    = get_parameter("odom_frame").as_string();
@@ -73,6 +74,7 @@ public:
         cfg.max_chi_keyframe    = get_parameter("icp_max_chi_keyframe").as_double();
         cfg.sensor_hz           = get_parameter("sensor_hz").as_double();
         cfg.frame_window        = static_cast<int>(get_parameter("frame_window").as_int());
+        cfg.source_voxel_size   = get_parameter("source_voxel_size").as_double();
 
         odometry_ = std::make_unique<madodom::Odometry>(cfg);
 

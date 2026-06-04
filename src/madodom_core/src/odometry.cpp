@@ -50,6 +50,7 @@ OdometryResult Odometry::registerScan(const PointCloud& scan_sensor) {
     result.num_source_leaves = filtered.size();
 
     // ── First scan: seed the map, return identity ───────────────────────────
+    // (Uses raw filtered cloud for the initial keyframe — no source tree needed.)
     if (n_scans_ == 0) {
         if (!filtered.empty()) {
             std::vector<Vec3> world_pts(filtered.begin(), filtered.end());
@@ -61,8 +62,18 @@ OdometryResult Odometry::registerScan(const PointCloud& scan_sensor) {
         return result;
     }
 
+    // ── Voxel-downsample source scan before MAD-tree construction ───────────
+    // One representative point per source_voxel_size-cell eliminates redundant
+    // points that would land in the same MAD-tree leaf, reducing buildMADTree
+    // PCA cost without hurting correspondence quality (source normals are not
+    // used in ICP — only target leaf normals matter).
+    // voxelDownsample() was compiled in voxel_grid.hpp but previously unused.
+    const PointCloud source = (cfg_.source_voxel_size > 0.0)
+                              ? voxelDownsample(filtered, cfg_.source_voxel_size)
+                              : filtered;
+
     // ── Build source MAD-tree from current scan (sensor frame) ──────────────
-    std::vector<Vec3> src_pts(filtered.begin(), filtered.end());
+    std::vector<Vec3> src_pts(source.begin(), source.end());
     MADTree* source_root = buildMADTree(src_pts, cfg_.b_max, cfg_.b_min);
     if (!source_root || map_.empty()) {
         ++n_scans_;
@@ -165,11 +176,13 @@ OdometryResult Odometry::registerScan(const PointCloud& scan_sensor) {
     result.mean_chi            = icp_res.mean_chi;
 
     const Vec3& t3 = T_curr_.translation();
-    std::printf("[scan %4d] in=%zu src=%zu corr=%zu "
+    std::printf("[scan %4d] in=%zu flt=%zu ds=%zu src=%zu corr=%zu "
                 "inlier=%.2f chi=%.4f conv=%c hlth=%c kf=%c "
                 "pos=%.3f,%.3f,%.3f\n",
                 n_scans_,
                 result.num_input_points,
+                filtered.size(),
+                source.size(),
                 result.num_source_leaves,
                 result.num_correspondences,
                 result.inlier_ratio,

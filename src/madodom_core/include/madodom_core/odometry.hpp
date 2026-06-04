@@ -30,6 +30,15 @@ struct OdometryConfig {
     double max_chi_keyframe    = 1.0;   // only add keyframe when mean chi < this [m]
     std::size_t min_correspondences = 50;
 
+    // ── Source scan downsampling ──────────────────────────────────────────
+    // Voxel size for downsampling the source scan before MAD-tree construction.
+    // Points within the same cell share a leaf — keeping all of them only adds
+    // PCA cost without improving correspondences.
+    // Rule of thumb: b_max / 2 keeps enough points per leaf for reliable PCA
+    // while cutting tree-build input by ~6-8x on a 128-beam LiDAR.
+    // Set to 0.0 to disable downsampling entirely.
+    double source_voxel_size = 0.15; // [m]
+
     // ── Velocity estimator / frame buffer ─────────────────────────────────
     double sensor_hz   = 10.0;  // LiDAR frequency (for dt in velocity predictor)
     int    frame_window = 10;   // frames kept for best-H keyframe selection

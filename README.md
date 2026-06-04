@@ -100,15 +100,17 @@ cd ~/dataset3
 evo_rpe tum optimized_traj.txt madodom_estimate.txt -r trans_part -a --delta 1 --delta_unit m
 ```
 
-**Our results (May 2026):**
+**Our results (June 2026, with source voxel downsampling at 0.15 m):**
 
 | Dataset | ATE RMSE | RPE RMSE (m/m) | Drift % |
 |---------|----------|----------------|---------|
-| Dataset 1 (still sensor) | 0.012 m | 0.018 | 1.8% |
-| Dataset 2 (wheeled loop) | 0.305 m | 0.028 | 2.8% |
-| Dataset 3 (stairs) | 0.217 m | 0.048 | 4.8% |
+| Dataset 1 (still sensor) | 0.014 m | 0.019 | 1.9% |
+| Dataset 2 (wheeled loop) | 0.222 m | 0.028 | 2.8% |
+| Dataset 3 (stairs) | 0.263 m | 0.044 | 4.4% |
 
-Dataset 2 loop closure error: 1.78 m over ~100 m (reference MAD-ICP: 1.63 m).
+Dataset 2 loop closure error improved to ~1.5 m over ~100 m (reference MAD-ICP: 1.63 m).
+Source voxel downsampling (`source_voxel_size: 0.15`) also gives ~1.9× wall-clock speedup
+on 128-beam LiDAR data by eliminating redundant near-field points before MAD-tree construction.
 
 ---
 
