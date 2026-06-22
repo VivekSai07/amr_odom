@@ -25,13 +25,13 @@ Reads a bag directly, runs odometry at full CPU speed, writes a TUM trajectory f
 ```bash
 source /opt/ros/humble/setup.bash && source ~/madodom_ws/install/setup.bash
 
-# Dataset 1 (still sensor)
+# Dataset 1 (handheld, random motion)
 ros2 run madodom_ros madodom_offline ~/dataset1/bag/ ~/dataset1/madodom_estimate.txt 1100
 
-# Dataset 2 (wheeled robot)
+# Dataset 2 (SPOT)
 ros2 run madodom_ros madodom_offline ~/dataset2/bag/ ~/dataset2/madodom_estimate.txt 1100
 
-# Dataset 3 (robot dog on stairs)
+# Dataset 3 (SPOT, stairs)
 ros2 run madodom_ros madodom_offline ~/dataset3/bag/ ~/dataset3/madodom_estimate.txt 1100
 ```
 
@@ -47,15 +47,15 @@ source ~/evo_env/bin/activate
 cd ~/dataset2 && awk '{$1=$1; print}' optimized_traj.txt > tmp.txt && mv tmp.txt optimized_traj.txt
 cd ~/dataset3 && awk '{$1=$1; print}' optimized_traj.txt > tmp.txt && mv tmp.txt optimized_traj.txt
 
-# Dataset 1 — xy view (pose is static, not very interesting)
+# Dataset 1 — xy view (handheld, random motion)
 cd ~/dataset1
 evo_traj tum madodom_estimate.txt --ref optimized_traj.txt -p --plot_mode xy
 
-# Dataset 2 — xy view (wheeled robot loop)
+# Dataset 2 — xy view (SPOT loop)
 cd ~/dataset2
 evo_traj tum madodom_estimate.txt --ref optimized_traj.txt -p --plot_mode xy
 
-# Dataset 3 — xyz view (shows stair climb in Z)
+# Dataset 3 — xyz view (SPOT, shows stair climb in Z)
 cd ~/dataset3
 evo_traj tum madodom_estimate.txt --ref optimized_traj.txt -p --plot_mode xyz
 ```
@@ -104,9 +104,9 @@ evo_rpe tum optimized_traj.txt madodom_estimate.txt -r trans_part -a --delta 1 -
 
 | Dataset | ATE RMSE | RPE RMSE (m/m) | Drift % |
 |---------|----------|----------------|---------|
-| Dataset 1 (still sensor) | 0.014 m | 0.019 | 1.9% |
-| Dataset 2 (wheeled loop) | 0.222 m | 0.028 | 2.8% |
-| Dataset 3 (stairs) | 0.263 m | 0.044 | 4.4% |
+| Dataset 1 (handheld) | 0.014 m | 0.019 | 1.9% |
+| Dataset 2 (SPOT loop) | 0.222 m | 0.028 | 2.8% |
+| Dataset 3 (SPOT, stairs) | 0.263 m | 0.044 | 4.4% |
 
 Dataset 2 loop closure error improved to ~1.5 m over ~100 m (reference MAD-ICP: 1.63 m).
 Source voxel downsampling (`source_voxel_size: 0.15`) also gives ~1.9× wall-clock speedup
@@ -218,15 +218,15 @@ The estimate file is written to the host-mounted dataset path and is
 immediately available for evo plotting in the same container session:
 
 ```bash
-# Dataset 1 — static sensor (xy view)
+# Dataset 1 — handheld, random motion (xy view)
 evo_traj tum /datasets/dataset1/madodom_estimate.txt \
   --ref /datasets/dataset1/optimized_traj.txt -p --plot_mode xy
 
-# Dataset 2 — wheeled robot loop (xy view)
+# Dataset 2 — SPOT loop (xy view)
 evo_traj tum /datasets/dataset2/madodom_estimate.txt \
   --ref /datasets/dataset2/optimized_traj.txt -p --plot_mode xy
 
-# Dataset 3 — stairs (xyz view, shows Z climb)
+# Dataset 3 — SPOT on stairs (xyz view, shows Z climb)
 evo_traj tum /datasets/dataset3/madodom_estimate.txt \
   --ref /datasets/dataset3/optimized_traj.txt -p --plot_mode xyz
 ```
@@ -248,9 +248,9 @@ awk '{$1=$1; print}' optimized_traj.txt > tmp.txt && mv tmp.txt optimized_traj.t
 
 | Dataset | Description | Scans | Duration |
 |---------|-------------|-------|----------|
-| `~/dataset1/bag/` | Still sensor | 365 | ~36 s |
-| `~/dataset2/bag/` | Wheeled robot, ~30×36 m loop | 2840 | ~284 s |
-| `~/dataset3/bag/` | Robot dog on stairs, 7 m climb | 3441 | ~344 s |
+| `~/dataset1/bag/` | Handheld, random motion | 365 | ~36 s |
+| `~/dataset2/bag/` | SPOT, ~30×36 m loop | 2840 | ~284 s |
+| `~/dataset3/bag/` | SPOT, stairs, 7 m climb | 3441 | ~344 s |
 
 Ground truth: `optimized_traj.txt` in each dataset folder.
 Reference MAD-ICP estimate: `estimate.txt` in each dataset folder.
